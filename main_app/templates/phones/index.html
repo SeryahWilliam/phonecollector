@@ -1,0 +1,17 @@
+{% extends 'base.html' %}
+{% block content %}
+
+<h1>Phone List</h1>
+
+{% for phone in phones %}
+  <div class="card">
+    <div class="card-content">
+      <span class="card-title">{{ phone.name }}</span>
+      <p>Manufacturer: {{ phone.manufacturer }}</p>
+      <p>Color: {{ phone.color }}</p>
+      <p>Year: {{ phone.year }}</p>
+    </div>
+  </div>
+{% endfor %}
+
+{% endblock %}
