@@ -1,16 +1,15 @@
-from django.shortcuts import render
-phones_list = [
-    {'id': 1, 'name': 'iPhone 11', 'manufacturer': 'Apple', 'year': 2019, 'color': 'Black'},
-    {'id': 4, 'name': 'iPhone 11 Pro', 'manufacturer': 'Apple', 'year': 2019, 'color': 'Midnight Green'},
-    {'id': 6, 'name': 'iPhone 12', 'manufacturer': 'Apple', 'year': 2020, 'color': 'Red'},
-    {'id': 8, 'name': 'iPhone 12 Pro Max', 'manufacturer': 'Apple', 'year': 2020, 'color': 'Pacific Blue'},
-    {'id': 5, 'name': 'Galaxy S20 Ultra', 'manufacturer': 'Samsung', 'year': 2020, 'color': 'Cosmic Gray'},
-    {'id': 2, 'name': 'Galaxy S20', 'manufacturer': 'Samsung', 'year': 2020, 'color': 'Blue'},
-    {'id': 9, 'name': 'Galaxy Note 20', 'manufacturer': 'Samsung', 'year': 2020, 'color': 'Mystic Bronze'},
-    {'id': 7, 'name': 'Galaxy S21', 'manufacturer': 'Samsung', 'year': 2021, 'color': 'Phantom White'},
-
-    {'id': 3, 'name': 'Pixel 5', 'manufacturer': 'Google', 'year': 2020, 'color': 'Black'},
-]
+import uuid
+import boto3
+import os
+from django.shortcuts import render, redirect
+from django.views.generic.edit import CreateView, UpdateView, DeleteView
+from django.views.generic import ListView, DetailView
+from .models import Phone, Accessory, Photo
+from .forms import RepairForm
+from django.contrib.auth import login
+from django.contrib.auth.forms import UserCreationForm
+from django.contrib.auth.decorators import login_required
+from django.contrib.auth.mixins import LoginRequiredMixin
 
 # Create your views here.
 def home(request):
@@ -19,6 +18,110 @@ def home(request):
 def about(request):
     return render(request, 'about.html')
 
+@login_required
 def phones_index(request):
-    context = {'phones': phones_list}
-    return render(request, 'phones/index.html', context)
+    phones = Phone.objects.filter(user=request.user)
+    return render(request, 'phones/index.html', {
+        'phones' : phones
+    })
+
+@login_required
+def phones_detail(request, phone_id):
+    phone = Phone.objects.get(id=phone_id)
+    id_list = phone.accessories.all().values_list('id')
+    accessories_phone_doesnt_have = Accessory.objects.exclude(id__in=id_list)
+    repair_form = RepairForm()
+    return render(request, 'phones/detail.html', 
+        {'phone' : phone, 'repair_form' : repair_form,
+        'accessories' : accessories_phone_doesnt_have
+    })
+
+@login_required
+def add_photo(request, phone_id):
+    photo_file = request.FILES.get('photo-file', None)
+    if photo_file:
+        s3 = boto3.client('s3')
+        key = uuid.uuid4().hex[:6] + photo_file.name[photo_file.name.rfind('.'):]
+        try:
+            bucket = os.environ['S3_BUCKET']
+            s3.upload_fileobj(photo_file, bucket, key)
+            url = f"{os.environ['S3_BASE_URL']}{bucket}/{key}"
+            Photo.objects.create(url=url, phone_id=phone_id)  
+        except Exception as e:
+            print('An error occurred uploading file to S3')
+            print(e)
+    return redirect('phone_detail', phone_id=phone_id)  
+
+def signup(request):
+  error_message = ''
+  if request.method == 'POST':
+    # This is how to create a 'user' form object
+    # that includes the data from the browser
+    form = UserCreationForm(request.POST)
+    if form.is_valid():
+      # This will add the user to the database
+      user = form.save()
+      # This is how we log a user in via code
+      login(request, user)
+      return redirect('index')
+    else:
+      error_message = 'Invalid sign up - try again'
+  # A bad POST or a GET request, so render signup.html with an empty form
+  form = UserCreationForm()
+  context = {'form': form, 'error_message': error_message}
+  return render(request, 'registration/signup.html', context)
+
+
+@login_required
+def assoc_accessory(request, phone_id, accessory_id):
+    Phone.objects.get(id=phone_id).accessories.add(accessory_id)
+    return redirect('detail', phone_id=phone_id)
+
+@login_required
+def remove_accessory(request, phone_id, accessory_id):
+    Phone.objects.get(id=phone_id).accessories.remove(accessory_id)
+    return redirect('detail', phone_id=phone_id)
+
+@login_required
+def add_repair(request,phone_id):
+    form = RepairForm(request.POST)
+    if form.is_valid():
+        new_repair = form.save(commit=False)
+        new_repair.phone_id = phone_id
+        new_repair.save()
+    return redirect('detail', phone_id=phone_id)
+
+class AccessoriesList(LoginRequiredMixin, ListView):
+    model = Accessory
+
+class AccessoriesDetail(LoginRequiredMixin, DetailView):
+    model = Accessory
+
+class PhoneCreate(LoginRequiredMixin, CreateView):
+    model = Phone
+    fields = '__all__'
+
+    def form_valid(self, form):
+        form.instance.user = self.request.user
+        return super().form_valid(form)
+
+class PhoneUpdate(LoginRequiredMixin, UpdateView):
+    model = Phone
+    fields = ['manufacturer', 'model', 'year', 'color']
+
+class PhoneDelete(LoginRequiredMixin, DeleteView):
+    model = Phone
+    success_url = '/phones'
+
+class AccessoryCreate(LoginRequiredMixin, CreateView):
+    model = Accessory
+    fields = ['name', 'color']
+    success_url = reversed('accessories_index')
+
+class AccessoryUpdate(LoginRequiredMixin, UpdateView):
+    model = Accessory
+    fields = ['nsme', 'color']
+
+class AccessoryDelete(LoginRequiredMixin, DeleteView):
+    model = Accessory
+    success_url = 'phones'

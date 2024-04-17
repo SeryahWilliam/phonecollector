@@ -7,8 +7,9 @@
   <meta http-equiv="X-UA-Compatible" content="ie=edge">
   <title>Phone Collector</title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css">
-
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
   <link rel="stylesheet" type="text/css" href="{% static 'css/style.css' %}">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
 </head>
 <body>
   <header class="navbar-fixed">
@@ -18,8 +19,22 @@
           <li><a href="/" class="left brand-logo">&nbsp;&nbsp;Phone Collector</a></li>
         </ul>
         <ul class="right">
-          <li><a href="/about">About</a></li>
-          <li><a href="/phones">View All My Phones</a></li>
+          <li><a href="{% url 'about' %}">About</a></li>
+          {% if user.is_authenticated %}
+            <li><a href="{% url 'accesories_create' %}">Add an Accessory</a></li>
+            <li><a href="{% url 'accesories_index' %}">View All Accessories</a></li>
+            <li><a href="{% url 'phones_create' %}">Add a Phone</a></li>
+            <li><a href="{% url 'index' %}">View All My Phones</a></li>
+            <l1>
+              <form id="logout-form" method="post" action="{% url 'logout' %}">
+                  {% csrf_token %}
+                  <button type="submit" class='btn-flat white-text'>Log Out</button>
+              </form>
+            </l1>
+          {% else %}
+            <li><a href="{% url 'signup' %}">Sign Up</a></li>
+            <li><a href="{% url 'login' %}">Log In</a></li>
+          {% endif %}
         </ul>
       </div>
     </nav>
@@ -29,7 +44,7 @@
     {% endblock %}
   </main>
   <footer class="page-footer">
-    <div class="right">All Rights Reserved, &copy; 2023 Phone Collector &nbsp;</div>
+    <div class="right">All Rights Reserved, &copy;{% now "Y" %} Phone Collector &nbsp;</div>
   </footer>
 </body>
 </html>

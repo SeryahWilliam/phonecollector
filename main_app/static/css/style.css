@@ -1,4 +1,4 @@
-body {
+/* body {
     display: flex;
     min-height: 100vh;
     flex-direction: column;
@@ -56,5 +56,90 @@ footer.page-footer {
     transform: translateY(-5px); 
     box-shadow: 0 12px 16px rgba(0,0,0,0.2);
 }
+ */
 
+ body {
+    background-color: #f4f4f9; /* Background color */
+    font-family: 'Arial', sans-serif;
+}
 
+.form-container {
+    max-width: 600px;
+    margin: 30px auto;
+    background: #fff;
+    padding: 20px;
+    box-shadow: 0 0 10px rgba(0,0,0,0.1); /* subtle shadow for the form container */
+}
+
+.form-section {
+    margin-bottom: 20px;
+}
+
+.form-section h3 {
+    background: #eeeeee;
+    padding: 10px;
+    margin: 0 -20px 20px -20px; /* Align background extending to the edges */
+}
+
+.input-field {
+    margin-bottom: 10px; /* Spacing between input fields */
+    border: none;
+    border-bottom: 1px solid #ccc; /* Bottom border */
+    padding: 10px;
+    width: 100%; /* Full width */
+}
+
+.input-field:focus {
+    outline: none;
+    border-bottom-color: #666; /* Darker border on focus */
+}
+
+/* Styling for select elements */
+.select-field {
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+    background-color: #fff;
+    border: none;
+    border-bottom: 1px solid #ccc;
+    padding: 10px;
+    width: 100%;
+    margin-bottom: 10px;
+}
+
+/* Style for the primary button */
+.button-primary {
+    background-color: #ffc107; /* Highlight color for primary actions */
+    color: #fff;
+    border: none;
+    padding: 10px 20px;
+    margin-top: 20px; /* Some space above the button */
+    cursor: pointer;
+    width: 100%; /* Full width */
+}
+
+.button-primary:hover {
+    background-color: #e0a800;
+}
+
+/* Additional styles for secondary information like terms and conditions */
+.small-text {
+    font-size: 0.8em;
+    color: #666;
+}
+
+/* Adjusting alignment and spacing for inline elements like checkboxes */
+.inline-field {
+    margin-right: 10px; /* Right margin for inline elements */
+}
+
+/* Styling for links and secondary actions */
+.link-secondary {
+    color: #666;
+    text-decoration: none;
+    font-size: 0.9em;
+}
+
+.link-secondary:hover {
+    text-decoration: underline;
+}
