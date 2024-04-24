@@ -15,6 +15,13 @@ class Accessory(models.Model):
     name = models.CharField(max_length=50)
     color = models.CharField(max_length=20)
 
+    def __str__(self):
+        return self.name
+
+    def get_absolute_url(self):
+        return reverse('accessory_detail', kwargs={'pk': self.id})
+
+
 # Create your models here.
 class Phone(models.Model):
     name = models.CharField(max_length=100)
@@ -22,15 +29,16 @@ class Phone(models.Model):
     model = models.CharField(max_length=100)
     year = models.IntegerField()
     color = models.CharField(max_length=50)
-    accessories = models.ManyToManyField(Accessory)
+    accessory = models.ManyToManyField(Accessory)
     user = models.ForeignKey(User, on_delete=models.CASCADE)
 
+    
     def __str__(self):
-        return f"{self.name} ({self.manufacturer} {self.model}"
+        return self.name
 
     def get_absolute_url(self):
-        return reverse("detail", kwargs={'phone_id': self.id})
-
+        return reverse('accessory_detail', kwargs={'pk': self.id})
+    
     def repaired_for_today(self):
         return self.repair_set.filter(date=date.today()).count() >= len(SERVICES)
 

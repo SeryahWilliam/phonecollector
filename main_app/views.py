@@ -28,12 +28,12 @@ def phones_index(request):
 @login_required
 def phones_detail(request, phone_id):
     phone = Phone.objects.get(id=phone_id)
-    id_list = phone.accessories.all().values_list('id')
+    id_list = phone.accessory.all().values_list('id')
     accessories_phone_doesnt_have = Accessory.objects.exclude(id__in=id_list)
     repair_form = RepairForm()
     return render(request, 'phones/detail.html', 
         {'phone' : phone, 'repair_form' : repair_form,
-        'accessories' : accessories_phone_doesnt_have
+        'accessory' : accessories_phone_doesnt_have
     })
 
 @login_required
@@ -74,12 +74,12 @@ def signup(request):
 
 @login_required
 def assoc_accessory(request, phone_id, accessory_id):
-    Phone.objects.get(id=phone_id).accessories.add(accessory_id)
+    Phone.objects.get(id=phone_id).accessory.add(accessory_id)
     return redirect('detail', phone_id=phone_id)
 
 @login_required
 def remove_accessory(request, phone_id, accessory_id):
-    Phone.objects.get(id=phone_id).accessories.remove(accessory_id)
+    Phone.objects.get(id=phone_id).accessory.remove(accessory_id)
     return redirect('detail', phone_id=phone_id)
 
 @login_required
@@ -91,15 +91,15 @@ def add_repair(request,phone_id):
         new_repair.save()
     return redirect('detail', phone_id=phone_id)
 
-class AccessoriesList(LoginRequiredMixin, ListView):
+class AccessoryList(LoginRequiredMixin, ListView):
     model = Accessory
 
-class AccessoriesDetail(LoginRequiredMixin, DetailView):
+class AccessoryDetail(LoginRequiredMixin, DetailView):
     model = Accessory
 
 class PhoneCreate(LoginRequiredMixin, CreateView):
     model = Phone
-    fields = '__all__'
+    fields = ['name', 'manufacturer', 'model', 'year', 'color']
 
     def form_valid(self, form):
         form.instance.user = self.request.user
@@ -116,7 +116,7 @@ class PhoneDelete(LoginRequiredMixin, DeleteView):
 class AccessoryCreate(LoginRequiredMixin, CreateView):
     model = Accessory
     fields = ['name', 'color']
-    success_url = reversed('accessories_index')
+    success_url = reversed('accessory_index')
 
 class AccessoryUpdate(LoginRequiredMixin, UpdateView):
     model = Accessory
